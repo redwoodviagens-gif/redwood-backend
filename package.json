@@ -1,0 +1,1 @@
+{"name":"redwood-multiapi-backend","version":"1.0.0","type":"module","scripts":{"dev":"nodemon src/server.js","start":"node src/server.js"},"dependencies":{"@supabase/supabase-js":"latest","axios":"latest","cors":"latest","dotenv":"latest","express":"latest","helmet":"latest","morgan":"latest"},"devDependencies":{"nodemon":"latest"}}
