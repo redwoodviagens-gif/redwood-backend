@@ -1,11 +1,12 @@
 import express from 'express';
 import axios from 'axios';
-import { env } from '../config/env.js';
 
 const router = express.Router();
 
 router.post('/', async (req, res) => {
   try {
+    console.log('📥 BODY RECEBIDO:', req.body);
+
     const {
       origin,
       destination,
@@ -16,7 +17,9 @@ router.post('/', async (req, res) => {
 
     if (!origin || !destination || !departureDate) {
       return res.status(400).json({
-        error: 'Campos obrigatórios ausentes'
+        success: false,
+        error: 'Campos obrigatórios ausentes',
+        required: ['origin', 'destination', 'departureDate']
       });
     }
 
@@ -25,8 +28,8 @@ router.post('/', async (req, res) => {
       {
         slices: [
           {
-            origin,
-            destination,
+            origin: origin.toUpperCase(),
+            destination: destination.toUpperCase(),
             departure_date: departureDate
           }
         ],
@@ -37,24 +40,28 @@ router.post('/', async (req, res) => {
       },
       {
         headers: {
-          Authorization: `Bearer ${env.DUFFEL_ACCESS_TOKEN}`,
+          Authorization: `Bearer ${process.env.DUFFEL_ACCESS_TOKEN}`,
           'Duffel-Version': 'v2',
           'Content-Type': 'application/json'
         }
       }
     );
 
-    const offers = response.data.data.offers;
+    const offers = response.data?.data?.offers || [];
+
+    console.log('✈️ VOOS ENCONTRADOS:', offers.length);
 
     return res.json({
       success: true,
+      total: offers.length,
       flights: offers
     });
 
   } catch (error) {
-    console.error('ERRO DUFFEL:', error.response?.data || error.message);
+    console.error('❌ ERRO DUFFEL:', error.response?.data || error.message);
 
     return res.status(500).json({
+      success: false,
       error: 'Erro ao buscar voos',
       details: error.response?.data || error.message
     });
