@@ -9,32 +9,18 @@ import leadRoutes from './routes/lead.routes.js';
 
 const app = express();
 
-// Middlewares
+// 🔧 Middlewares
 app.use(helmet());
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 app.use(morgan('dev'));
 
-// Rotas
+// 🚀 Rotas principais
 app.use('/api/price-alerts', priceAlertsRoutes);
+app.use('/api/flights', flightRoutes);
 app.use('/api/leads', leadRoutes);
 
-// 🔥 TESTE DIRETO (GARANTE QUE A API RESPONDE)
-app.post('/api/flights', (req, res) => {
-  console.log('🔥 ROTA DIRETA /api/flights OK');
-  console.log('BODY:', req.body);
-
-  return res.json({
-    success: true,
-    message: 'ROTA DIRETA FUNCIONANDO',
-    body: req.body
-  });
-});
-
-// 👉 Mantém sua estrutura modular também
-app.use('/api/flights', flightRoutes);
-
-// Health check
+// ❤️ Health check
 app.get('/health', (req, res) =>
   res.json({
     ok: true,
@@ -43,15 +29,17 @@ app.get('/health', (req, res) =>
   })
 );
 
-// Tratamento de erro
+// ❌ Tratamento global de erro
 app.use((err, req, res, next) => {
   console.error('ERRO GLOBAL:', err);
+
   res.status(500).json({
-    error: err.message || 'Erro interno'
+    success: false,
+    error: err.message || 'Erro interno no servidor'
   });
 });
 
-// Start servidor
+// 🟢 Start do servidor
 app.listen(env.port, () =>
   console.log(`🚀 Redwood backend rodando na porta ${env.port}`)
 );
