@@ -20,7 +20,7 @@ export async function searchDuffelFlights(params) {
     }
   });
 
-  const offers = data.data?.offers || [];
+ const offers = data?.data?.offers || [];
   return offers.slice(0, 10).map((offer) => ({
     provider: 'duffel',
     id: offer.id,
