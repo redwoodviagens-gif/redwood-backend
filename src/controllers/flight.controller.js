@@ -4,6 +4,7 @@ import { buildWhatsAppLink } from "../utils/whatsapp.js";
 
 export async function searchFlightsController(req, res, next) {
   try {
+    // 🔥 AGORA FUNCIONA COM POST (body) E GET (query)
     const source = req.method === "POST" ? req.body : req.query;
 
     const {
@@ -18,6 +19,7 @@ export async function searchFlightsController(req, res, next) {
 
     const totalAdults = Number(adults || passengers || 1);
 
+    // 🛑 VALIDAÇÃO
     if (!origin || !destination || !departureDate) {
       return res.status(400).json({
         error:
@@ -25,6 +27,7 @@ export async function searchFlightsController(req, res, next) {
       });
     }
 
+    // 🔎 BUSCA VOOS
     const offers = await searchFlights({
       origin,
       destination,
@@ -34,11 +37,13 @@ export async function searchFlightsController(req, res, next) {
       provider,
     });
 
+    // 📊 MÉDIA DE PREÇOS
     const prices = offers.map((o) => o.price).filter(Boolean);
     const averagePrice = prices.length
       ? prices.reduce((a, b) => a + b, 0) / prices.length
       : null;
 
+    // 📈 ENRIQUECER DADOS
     const enriched = offers.map((offer) => {
       const prediction = predictPrice({
         price: offer.price,
@@ -62,13 +67,16 @@ export async function searchFlightsController(req, res, next) {
       };
     });
 
+    // ✅ RESPOSTA FINAL
     return res.json({
       provider: provider || undefined,
       count: enriched.length,
       averagePrice,
       offers: enriched,
     });
+
   } catch (err) {
+    console.error("Erro na busca de voos:", err);
     next(err);
   }
 }
