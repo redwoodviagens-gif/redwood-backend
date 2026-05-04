@@ -59,11 +59,38 @@ router.post('/', async (req, res) => {
       }
     );
 
+    const offers = response.data?.data?.offers || [];
+
+    const flights = offers.map((offer) => {
+      const firstSlice = offer.slices?.[0];
+      const firstSegment = firstSlice?.segments?.[0];
+      const lastSegment =
+        firstSlice?.segments?.[firstSlice.segments.length - 1];
+
+      return {
+        id: offer.id,
+        price: Number(offer.total_amount),
+        currency: offer.total_currency,
+        priceText: `${offer.total_amount} ${offer.total_currency}`,
+        airline: offer.owner?.name || 'Companhia não informada',
+        airlineLogo: offer.owner?.logo_symbol_url || null,
+        origin: firstSlice?.origin?.iata_code || origin.toUpperCase(),
+        destination: firstSlice?.destination?.iata_code || destination.toUpperCase(),
+        departureTime: firstSegment?.departing_at || null,
+        arrivalTime: lastSegment?.arriving_at || null,
+        duration: firstSlice?.duration || null,
+        stops: Math.max((firstSlice?.segments?.length || 1) - 1, 0),
+        raw: offer
+      };
+    });
+
+    flights.sort((a, b) => a.price - b.price);
+
     return res.json({
       success: true,
+      total: flights.length,
       offerRequestId: response.data?.data?.id,
-      offers: response.data?.data?.offers || [],
-      data: response.data?.data
+      flights
     });
 
   } catch (error) {
