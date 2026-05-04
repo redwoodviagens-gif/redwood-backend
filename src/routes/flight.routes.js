@@ -38,7 +38,7 @@ router.post('/', async (req, res) => {
       {
         headers: {
           Authorization: `Bearer ${env.DUFFEL_ACCESS_TOKEN}`,
-          'Duffel-Version': 'v1',
+          'Duffel-Version': 'v2',
           'Content-Type': 'application/json'
         }
       }
