@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.post('/', async (req, res) => {
   try {
-    console.log('📥 BODY RECEBIDO:', req.body);
+    console.log('BODY RECEBIDO:', req.body);
 
     const {
       origin,
@@ -23,20 +23,32 @@ router.post('/', async (req, res) => {
       });
     }
 
+    const slices = [
+      {
+        origin: origin.toUpperCase(),
+        destination: destination.toUpperCase(),
+        departure_date: departureDate
+      }
+    ];
+
+    if (returnDate) {
+      slices.push({
+        origin: destination.toUpperCase(),
+        destination: origin.toUpperCase(),
+        departure_date: returnDate
+      });
+    }
+
     const response = await axios.post(
       'https://api.duffel.com/air/offer_requests',
       {
-        slices: [
-          {
-            origin: origin.toUpperCase(),
-            destination: destination.toUpperCase(),
-            departure_date: departureDate
-          }
-        ],
-        passengers: Array.from({ length: adults }, () => ({
-          type: 'adult'
-        })),
-        cabin_class: 'economy'
+        data: {
+          slices,
+          passengers: Array.from({ length: Number(adults) }, () => ({
+            type: 'adult'
+          })),
+          cabin_class: 'economy'
+        }
       },
       {
         headers: {
@@ -47,18 +59,15 @@ router.post('/', async (req, res) => {
       }
     );
 
-    const offers = response.data?.data?.offers || [];
-
-    console.log('✈️ VOOS ENCONTRADOS:', offers.length);
-
     return res.json({
       success: true,
-      total: offers.length,
-      flights: offers
+      offerRequestId: response.data?.data?.id,
+      offers: response.data?.data?.offers || [],
+      data: response.data?.data
     });
 
   } catch (error) {
-    console.error('❌ ERRO DUFFEL:', error.response?.data || error.message);
+    console.error('ERRO DUFFEL:', error.response?.data || error.message);
 
     return res.status(500).json({
       success: false,
