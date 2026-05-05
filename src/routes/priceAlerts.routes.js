@@ -2,13 +2,16 @@ import express from "express";
 import { createClient } from "@supabase/supabase-js";
 import fetch from "node-fetch";
 
-global.fetch = fetch;
-
 const router = express.Router();
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    global: {
+      fetch
+    }
+  }
 );
 
 router.post("/", async (req, res) => {
@@ -32,8 +35,8 @@ router.post("/", async (req, res) => {
       offerId,
       provider = "duffel",
       observacoes,
-      campanha,
-      raw,
+      campanha = "site-redwood",
+      raw
     } = req.body;
 
     if (!origem || !destino || !dataIda || !precoAtual) {
@@ -41,7 +44,7 @@ router.post("/", async (req, res) => {
         success: false,
         error: "Campos obrigatórios ausentes",
         required: ["origem", "destino", "dataIda", "precoAtual"],
-        received: req.body,
+        received: req.body
       });
     }
 
@@ -68,9 +71,9 @@ router.post("/", async (req, res) => {
           provider,
           status: "novo",
           observacoes: observacoes || null,
-          campanha: campanha || "site-redwood",
-          raw: raw || null,
-        },
+          campanha,
+          raw: raw || null
+        }
       ])
       .select();
 
@@ -82,7 +85,7 @@ router.post("/", async (req, res) => {
     return res.json({
       success: true,
       message: "Alerta de preço salvo com sucesso",
-      alert: data?.[0] || null,
+      alert: data?.[0] || null
     });
   } catch (err) {
     console.error("ERRO AO SALVAR ALERTA:", err);
@@ -90,7 +93,7 @@ router.post("/", async (req, res) => {
     return res.status(500).json({
       success: false,
       error: "Erro ao salvar alerta",
-      details: err.message,
+      details: err.message
     });
   }
 });
