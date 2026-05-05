@@ -16,65 +16,53 @@ const supabase = createClient(
 
 router.post("/", async (req, res) => {
   try {
-    const {
-      nome,
-      whatsapp,
-      email,
-      origem,
-      destino,
-      dataIda,
-      dataVolta,
-      passageiros = 1,
-      precoAtual,
-      moeda = "BRL",
-      precoDesejado,
-      companhia,
-      codigoCompanhia,
-      horarioIda,
-      horarioVolta,
-      offerId,
-      provider = "duffel",
-      observacoes,
-      campanha = "site-redwood",
-      raw
-    } = req.body;
+    const body = req.body;
 
-    if (!origem || !destino || !dataIda || !precoAtual) {
+    const alerta = {
+      nome: body.nome || null,
+      whatsapp: body.whatsapp || "lead-site",
+      email: body.email || null,
+
+      origem: body.origem,
+      destino: body.destino,
+
+      data_ida: body.dataIda,
+      data_volta: body.dataVolta || null,
+
+      passageiros: body.passageiros || 1,
+
+      preco_atual: body.precoAtual,
+      moeda: body.moeda || "BRL",
+      preco_desejado: body.precoDesejado || null,
+
+      companhia: body.companhia || null,
+      codigo_companhia: body.codigoCompanhia || null,
+
+      horario_ida: body.horarioIda || null,
+      horario_volta: body.horarioVolta || null,
+
+      offer_id: body.offerId || null,
+      provider: body.provider || "duffel",
+
+      status: "novo",
+      observacoes: body.observacoes || null,
+      campanha: body.campanha || "site-redwood",
+
+      raw: body.raw || null
+    };
+
+    if (!alerta.origem || !alerta.destino || !alerta.data_ida || !alerta.preco_atual) {
       return res.status(400).json({
         success: false,
         error: "Campos obrigatórios ausentes",
         required: ["origem", "destino", "dataIda", "precoAtual"],
-        received: req.body
+        received: body
       });
     }
 
     const { data, error } = await supabase
       .from("price_alerts")
-      .insert([
-        {
-          nome: nome || null,
-          whatsapp: whatsapp || "lead-site",
-          email: email || null,
-          origem,
-          destino,
-          data_ida: dataIda,
-          data_volta: dataVolta || null,
-          passageiros,
-          preco_atual: precoAtual,
-          moeda,
-          preco_desejado: precoDesejado || null,
-          companhia: companhia || null,
-          codigo_companhia: codigoCompanhia || null,
-          horario_ida: horarioIda || null,
-          horario_volta: horarioVolta || null,
-          offer_id: offerId || null,
-          provider,
-          status: "novo",
-          observacoes: observacoes || null,
-          campanha,
-          raw: raw || null
-        }
-      ])
+      .insert([alerta])
       .select();
 
     if (error) {
