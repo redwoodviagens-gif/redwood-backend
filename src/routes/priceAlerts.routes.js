@@ -1,7 +1,8 @@
-import fetch from "node-fetch";
-global.fetch = fetch;
 import express from "express";
 import { createClient } from "@supabase/supabase-js";
+import fetch from "node-fetch";
+
+global.fetch = fetch;
 
 const router = express.Router();
 
