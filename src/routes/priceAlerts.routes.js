@@ -11,22 +11,34 @@ const supabase = createClient(
 router.post("/", async (req, res) => {
   try {
     const {
-      origin,
-      destination,
-      departureDate,
-      returnDate,
-      price,
-      priceBRL,
-      recommendation,
-      phone,
-      source = "site-redwood"
+      nome,
+      whatsapp,
+      email,
+      origem,
+      destino,
+      dataIda,
+      dataVolta,
+      passageiros = 1,
+      precoAtual,
+      moeda = "BRL",
+      precoDesejado,
+      companhia,
+      codigoCompanhia,
+      horarioIda,
+      horarioVolta,
+      offerId,
+      provider = "duffel",
+      observacoes,
+      campanha,
+      raw,
     } = req.body;
 
-    if (!origin || !destination || !departureDate || !price) {
+    if (!origem || !destino || !dataIda || !precoAtual) {
       return res.status(400).json({
         success: false,
         error: "Campos obrigatórios ausentes",
-        required: ["origin", "destination", "departureDate", "price"]
+        required: ["origem", "destino", "dataIda", "precoAtual"],
+        received: req.body,
       });
     }
 
@@ -34,16 +46,28 @@ router.post("/", async (req, res) => {
       .from("price_alerts")
       .insert([
         {
-          origin,
-          destination,
-          departure_date: departureDate,
-          return_date: returnDate || null,
-          price,
-          price_brl: priceBRL || null,
-          recommendation: recommendation || null,
-          phone: phone || null,
-          source
-        }
+          nome: nome || null,
+          whatsapp: whatsapp || "lead-site",
+          email: email || null,
+          origem,
+          destino,
+          data_ida: dataIda,
+          data_volta: dataVolta || null,
+          passageiros,
+          preco_atual: precoAtual,
+          moeda,
+          preco_desejado: precoDesejado || null,
+          companhia: companhia || null,
+          codigo_companhia: codigoCompanhia || null,
+          horario_ida: horarioIda || null,
+          horario_volta: horarioVolta || null,
+          offer_id: offerId || null,
+          provider,
+          status: "novo",
+          observacoes: observacoes || null,
+          campanha: campanha || "site-redwood",
+          raw: raw || null,
+        },
       ])
       .select();
 
@@ -54,8 +78,8 @@ router.post("/", async (req, res) => {
 
     return res.json({
       success: true,
-      message: "Alerta salvo com sucesso",
-      alert: data?.[0] || null
+      message: "Alerta de preço salvo com sucesso",
+      alert: data?.[0] || null,
     });
   } catch (err) {
     console.error("ERRO AO SALVAR ALERTA:", err);
@@ -63,7 +87,7 @@ router.post("/", async (req, res) => {
     return res.status(500).json({
       success: false,
       error: "Erro ao salvar alerta",
-      details: err.message
+      details: err.message,
     });
   }
 });
